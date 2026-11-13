@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyMaster Admin — Hệ Thống Quản Trị & Bán License Key</title>
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e32',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-slate-950/80 backdrop-blur-sm hidden lg:hidden transition-opacity"></div>
+
+    <!-- ==========================================
+         SIDEBAR NAVIGATION (Bên trái)
+    =========================================== -->
+    <aside id="sidebar" class="fixed top-0 left-0 z-40 h-screen w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/80 flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div>
+            <!-- Brand Header -->
+            <div class="h-16 px-6 flex items-center justify-between border-b border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span id="brand-name-display" class="font-bold text-base tracking-tight text-white block leading-none">KeyMaster</span>
+                        <span class="text-[11px] font-medium text-indigo-400 tracking-wider uppercase">License Admin</span>
+                    </div>
+                </div>
+                <button id="close-sidebar-btn" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="p-4 space-y-1.5">
+                <p class="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2">Quản trị hệ thống</p>
+                
+                <button data-tab="dashboard" class="nav-tab active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-indigo-600/15 text-indigo-400 border border-indigo-500/30">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Tổng quan</span>
+                </button>
+
+                <button data-tab="keys" class="nav-tab w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="key" class="w-4 h-4"></i>
+                        <span>Quản lý Key</span>
+                    </div>
+                    <span id="sidebar-key-count" class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-800 text-slate-300">0</span>
+                </button>
+
+                <button data-tab="products" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all">
+                    <i data-lucide="package" class="w-4 h-4"></i>
+                    <span>Gói sản phẩm</span>
+                </button>
+
+                <button data-tab="orders" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <span>Khách hàng & Đơn hàng</span>
+                </button>
+
+                <div class="pt-4 pb-1">
+                    <p class="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2">Nhà phát triển</p>
+                </div>
+
+                <button data-tab="api-tester" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all">
+                    <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Giả lập API Check Key</span>
+                </button>
+
+                <button data-tab="settings" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Cài đặt hệ thống</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Bottom Admin Info & Quick Action -->
+        <div class="p-4 border-t border-slate-800/80 space-y-3">
+            <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-sm">
+                    AD
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-semibold text-white truncate">Quản trị viên (Root)</p>
+                    <p class="text-[11px] text-emerald-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> API Server Online
+                    </p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==========================================
+         MAIN CONTENT WRAPPER
+    =========================================== -->
+    <div class="lg:pl-64 min-h-screen flex flex-col">
+        
+        <!-- Top Header Bar -->
+        <header class="sticky top-0 z-20 h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-8 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <button id="open-sidebar-btn" class="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h1 id="page-title" class="text-base sm:text-lg font-bold text-white">Tổng quan hệ thống</h1>
+                    <p id="page-subtitle" class="text-xs text-slate-400 hidden sm:block">Theo dõi doanh thu, lượt kích hoạt và trạng thái bản quyền phần mềm</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <button onclick="openCreateKeyModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/25 transition-all">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Tạo Key Mới</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Views Container -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- ==========================================
+                 TAB 1: TỔNG QUAN (DASHBOARD)
+            =========================================== -->
+            <section id="view-dashboard" class="tab-view space-y-6">
+                
+                <!-- 4 KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+                    <!-- KPI 1: Tổng doanh thu -->
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 hover:border-indigo-500/40 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-medium text-slate-400">Tổng doanh thu</span>
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                <i data-lucide="wallet" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <p id="kpi-revenue" class="text-2xl font-extrabold text-white tracking-tight">0 ₫</p>
+                        <div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-400">
+                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                            <span>+18.4% so với tuần trước</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Tổng Key đã phát hành -->
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 hover:border-indigo-500/40 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-medium text-slate-400">Tổng Key đã phát hành</span>
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <p id="kpi-total-keys" class="text-2xl font-extrabold text-white tracking-tight">0</p>
+                        <div class="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
+                            <span id="kpi-unused-keys" class="text-indigo-400 font-medium">0</span>
+                            <span>key chưa kích hoạt trong kho</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Key đang hoạt động (Active) -->
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 hover:border-indigo-500/40 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-medium text-slate-400">Key đang hoạt động</span>
+                            <div class="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <p id="kpi-active-keys" class="text-2xl font-extrabold text-white tracking-tight">0</p>
+                        <div class="mt-2 flex items-center gap-1.5 text-xs text-sky-400">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                            <span>Đã xác thực HWID thiết bị</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Sắp hết hạn / Bị khóa -->
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 hover:border-indigo-500/40 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-medium text-slate-400">Hết hạn / Đã khóa</span>
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <p id="kpi-alert-keys" class="text-2xl font-extrabold text-white tracking-tight">0</p>
+                        <div class="mt-2 flex items-center gap-1.5 text-xs text-amber-400">
+                            <span>Cần gia hạn hoặc bị thu hồi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart & Recent Activity Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Revenue & Activation Chart (7 days) -->
+                    <div class="lg:col-span-7 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h2 class="text-base font-bold text-white">Doanh thu & Lượt kích hoạt (7 ngày qua)</h2>
+                                <p class="text-xs text-slate-400">Thống kê tự động theo thời gian thực</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                VNĐ / Lượt Active
+                            </span>
+                        </div>
+                        <div class="relative h-64 sm:h-72 w-full">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activations & Logs -->
+                    <div class="lg:col-span-5 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 sm:p-6 flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 class="text-base font-bold text-white">Hoạt động gần đây</h2>
+                                <p class="text-xs text-slate-400">Giao dịch bán key & log xác thực HWID</p>
+                            </div>
+                            <button onclick="switchTab('keys')" class="text-xs font-medium text-indigo-400 hover:text-indigo-300">Xem tất cả →</button>
+                        </div>
+                        <div id="recent-activity-list" class="space-y-3 overflow-y-auto max-h-72 pr-1">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 TAB 2: QUẢN LÝ LICENSE KEYS (Core Feature)
+            =========================================== -->
+            <section id="view-keys" class="tab-view hidden space-y-5">
+                
+                <!-- Filter & Action Toolbar -->
+                <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <!-- Status Filter Pills -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button data-status="all" class="status-filter-btn active px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all">
+                                Tất cả
+                            </button>
+                            <button data-status="unused" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition-all">
+                                Chưa kích hoạt
+                            </button>
+                            <button data-status="active" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition-all">
+                                Đang hoạt động
+                            </button>
+                            <button data-status="expired" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition-all">
+                                Hết hạn
+                            </button>
+                            <button data-status="banned" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition-all">
+                                Đã khóa
+                            </button>
+                        </div>
+
+                        <!-- Export & Create Buttons -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="exportKeys('txt')" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-all" title="Xuất danh sách đang lọc ra file TXT">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i>
+                                <span>Xuất .TXT</span>
+                            </button>
+                            <button onclick="exportKeys('csv')" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-all" title="Xuất danh sách đang lọc ra file Excel CSV">
+                                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                <span>Xuất .CSV</span>
+                            </button>
+                            <button onclick="openCreateKeyModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>Tạo Key Mới</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Input & Product Dropdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-800/80">
+                        <div class="md:col-span-8 relative">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="key-search-input" placeholder="Tìm kiếm theo mã Key, HWID thiết bị, email hoặc ghi chú khách hàng..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+                        </div>
+                        <div class="md:col-span-4">
+                            <select id="key-product-filter" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors">
+                                <option value="all">Tất cả gói sản phẩm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- License Keys Table -->
+                <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-950/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    <th class="py-3.5 px-4">Mã License Key</th>
+                                    <th class="py-3.5 px-4">Sản phẩm / Gói</th>
+                                    <th class="py-3.5 px-4">Trạng thái</th>
+                                    <th class="py-3.5 px-4">Thời hạn / Hết hạn</th>
+                                    <th class="py-3.5 px-4">HWID Thiết bị</th>
+                                    <th class="py-3.5 px-4">Khách hàng / Ghi chú</th>
+                                    <th class="py-3.5 px-4 text-right">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keys-table-body" class="divide-y divide-slate-800/70 text-sm">
+                                <!-- Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Empty State -->
+                    <div id="keys-empty-state" class="hidden py-12 text-center space-y-2">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto">
+                            <i data-lucide="key-round" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-300">Không tìm thấy License Key nào phù hợp</p>
+                        <p class="text-xs text-slate-500">Thử thay đổi bộ lọc hoặc bấm "Tạo Key Mới" để phát hành mã bản quyền.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 TAB 3: GÓI SẢN PHẨM (PRODUCTS / PLANS)
+            =========================================== -->
+            <section id="view-products" class="tab-view hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Danh sách Phần mềm & Gói bản quyền</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Quản lý các công cụ, phần mềm và mức giá niêm yết của hệ thống</p>
+                    </div>
+                    <button onclick="openProductModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Thêm sản phẩm mới</span>
+                    </button>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Product cards injected via JS -->
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 TAB 4: KHÁCH HÀNG & ĐƠN HÀNG (ORDERS)
+            =========================================== -->
+            <section id="view-orders" class="tab-view hidden space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Lịch sử Đơn hàng & Khách hàng mua Key</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Theo dõi các giao dịch thanh toán tự động hoặc tạo đơn thủ công cho khách</p>
+                    </div>
+                    <button onclick="openCreateOrderModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all">
+                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                        <span>Ghi nhận đơn bán mới</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-950/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    <th class="py-3.5 px-4">Mã Đơn</th>
+                                    <th class="py-3.5 px-4">Khách hàng</th>
+                                    <th class="py-3.5 px-4">Sản phẩm & Gói</th>
+                                    <th class="py-3.5 px-4">Key đã cấp</th>
+                                    <th class="py-3.5 px-4">Số tiền</th>
+                                    <th class="py-3.5 px-4">Phương thức</th>
+                                    <th class="py-3.5 px-4">Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="divide-y divide-slate-800/70 text-sm">
+                                <!-- Orders injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 TAB 5: GIẢ LẬP API CHECK KEY (API TESTER)
+            =========================================== -->
+            <section id="view-api-tester" class="tab-view hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Left: API Request Simulator -->
+                    <div class="lg:col-span-6 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 sm:p-6 space-y-5">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                            <div class="flex items-center gap-2.5">
+                                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">POST</span>
+                                <code class="text-xs sm:text-sm font-mono text-slate-200">/api/v1/license/verify</code>
+                            </div>
+                            <span class="text-xs text-slate-400">Client Simulator</span>
+                        </div>
+
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Mô phỏng quá trình phần mềm Client (Tool, App, Game...) gửi yêu cầu kiểm tra bản quyền lên máy chủ. Nếu Key hợp lệ và chưa gắn thiết bị, hệ thống sẽ tự động kích hoạt và khóa chặt với mã HWID này.
+                        </p>
+
+                        <form id="api-test-form" class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-semibold text-slate-300">License Key cần kiểm tra *</label>
+                                    <button type="button" onclick="fillSampleUnusedKey()" class="text-[11px] text-indigo-400 hover:text-indigo-300 underline">
+                                        Lấy nhanh 1 key từ kho
+                                    </button>
+                                </div>
+                                <input type="text" id="api-input-key" required placeholder="VD: VIP-8821-9042-7710" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-sm text-indigo-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-semibold text-slate-300">Mã phần cứng thiết bị (HWID) *</label>
+                                    <button type="button" onclick="generateRandomHwid()" class="text-[11px] text-emerald-400 hover:text-emerald-300 underline">
+                                        Tạo HWID ngẫu nhiên
+                                    </button>
+                                </div>
+                                <input type="text" id="api-input-hwid" required value="HWID-WIN11-94A8-F201-C88E" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                                <span>Kiểm tra kích hoạt (Send Request)</span>
+                            </button>
+                        </form>
+
+                        <!-- JSON Response Box -->
+                        <div class="space-y-2 pt-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phản hồi từ Server (JSON Response)</span>
+                                <span id="api-status-badge" class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-400">Chờ gửi yêu cầu...</span>
+                            </div>
+                            <pre id="api-json-output" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed">{
+  "status": "ready",
+  "message": "Nhập License Key và HWID phía trên để kiểm thử API."
+}</pre>
+                        </div>
+                    </div>
+
+                    <!-- Right: Integration Code Snippets -->
+                    <div class="lg:col-span-6 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div>
+                                    <h3 class="text-base font-bold text-white">Mã nguồn tích hợp cho Client App</h3>
+                                    <p class="text-xs text-slate-400">Copy đoạn mã mẫu gắn vào phần mềm của bạn</p>
+                                </div>
+                                <button onclick="copyCodeSnippet()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 flex items-center gap-1.5 border border-slate-700">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy Code</span>
+                                </button>
+                            </div>
+
+                            <!-- Language Switcher Tabs -->
+                            <div class="flex items-center gap-2">
+                                <button data-lang="csharp" class="code-lang-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">C# (.NET)</button>
+                                <button data-lang="python" class="code-lang-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">Python</button>
+                                <button data-lang="nodejs" class="code-lang-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">Node.js</button>
+                            </div>
+
+                            <!-- Code Block -->
+                            <pre id="code-snippet-display" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed max-h-96"></pre>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-xs text-indigo-200 flex items-start gap-2.5">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                            <span><strong>Bảo mật chống Crack:</strong> Nên ký số phản hồi JSON bằng RSA-2048 hoặc HMAC-SHA256 kèm Timestamp để ngăn chặn giả mạo gói tin cục bộ (Local Proxy Spoofing).</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 TAB 6: CÀI ĐẶT HỆ THỐNG (SETTINGS)
+            =========================================== -->
+            <section id="view-settings" class="tab-view hidden max-w-3xl space-y-6">
+                <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 space-y-5">
+                    <div class="border-b border-slate-800 pb-4">
+                        <h2 class="text-base font-bold text-white">Cấu hình Cửa hàng & Bảo mật API</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Quản lý thông tin thương hiệu, khóa bí mật API và dữ liệu lưu trữ</p>
+                    </div>
+
+                    <form id="settings-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tên hệ thống / Thương hiệu bán Key</label>
+                            <input type="text" id="setting-shop-name" value="KeyMaster" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">API Secret Key (Dùng để ký xác thực Client)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="setting-api-secret" readonly value="sk_live_98a7f6d5e4c3b2a10987654321fedcba" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-amber-400">
+                                <button type="button" onclick="regenerateApiSecret()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white border border-slate-700">
+                                    Tạo mới Secret
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all">
+                                Lưu cấu hình
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Danger Zone: Reset Demo Data -->
+                <div class="bg-rose-950/20 border border-rose-500/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-rose-400">Khôi phục dữ liệu mẫu ban đầu</h3>
+                        <p class="text-xs text-slate-400 mt-1">Xóa toàn bộ thay đổi trong localStorage và nạp lại bộ dữ liệu mẫu tiếng Việt mặc định.</p>
+                    </div>
+                    <button onclick="resetAllDemoData()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex-shrink-0 transition-all">
+                        Reset Dữ Liệu Mẫu
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODAL 1: TẠO LICENSE KEY MỚI (Hàng loạt)
+    =========================================== -->
+    <div id="create-key-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Tạo License Key Mới</h3>
+                        <p class="text-xs text-slate-400">Hỗ trợ phát hành đơn lẻ hoặc tạo hàng loạt tới 50 key</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('create-key-modal')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="create-key-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Chọn gói sản phẩm *</label>
+                    <select id="new-key-product" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <!-- Options injected via JS -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Thời hạn sử dụng *</label>
+                        <select id="new-key-duration" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="1">1 Ngày (Dùng thử)</option>
+                            <option value="7">7 Ngày (Tuần)</option>
+                            <option value="30" selected>30 Ngày (1 Tháng)</option>
+                            <option value="365">365 Ngày (1 Năm)</option>
+                            <option value="99999">Vĩnh viễn (Lifetime)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Số lượng tạo (1 - 50) *</label>
+                        <input type="number" id="new-key-quantity" min="1" max="50" value="1" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tiền tố (Prefix)</label>
+                        <input type="text" id="new-key-prefix" value="VIP" maxlength="8" placeholder="VD: VIP, PRO, KM" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-sm uppercase text-indigo-300 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Giới hạn thiết bị (HWID)</label>
+                        <select id="new-key-max-devices" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="1" selected>1 Thiết bị (PC/Laptop)</option>
+                            <option value="2">2 Thiết bị</option>
+                            <option value="5">5 Thiết bị (Team)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Email khách hàng / Ghi chú đơn hàng</label>
+                    <input type="text" id="new-key-note" placeholder="VD: khachhang@gmail.com - Đơn Zalo #109" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2.5">
+                    <button type="button" onclick="closeModal('create-key-modal')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/25">
+                        Phát hành Key ngay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 2: GIA HẠN THÊM NGÀY CHO KEY
+    =========================================== -->
+    <div id="extend-key-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white">Gia hạn thời gian sử dụng Key</h3>
+                <button onclick="closeModal('extend-key-modal')" class="p-1 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="extend-key-form" class="space-y-4">
+                <input type="hidden" id="extend-key-id">
+                <div>
+                    <p class="text-xs text-slate-400">Mã Key đang chọn:</p>
+                    <p id="extend-key-code-display" class="font-mono text-sm font-bold text-indigo-400 mt-1"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Số ngày muốn cộng thêm</label>
+                    <select id="extend-days-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                        <option value="7">+7 Ngày</option>
+                        <option value="15">+15 Ngày</option>
+                        <option value="30" selected>+30 Ngày (1 Tháng)</option>
+                        <option value="90">+90 Ngày (3 Tháng)</option>
+                        <option value="365">+365 Ngày (1 Năm)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('extend-key-modal')" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Hủy</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white">Xác nhận gia hạn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 3: THÊM / SỬA GÓI SẢN PHẨM
+    =========================================== -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="product-modal-title" class="text-base font-bold text-white">Thêm gói sản phẩm mới</h3>
+                <button onclick="closeModal('product-modal')" class="p-1 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" id="prod-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tên phần mềm / Gói dịch vụ *</label>
+                    <input type="text" id="prod-name" required placeholder="VD: AutoFB Marketing Pro" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Giá bán chuẩn (VNĐ) *</label>
+                        <input type="number" id="prod-price" required min="0" step="1000" placeholder="250000" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Phiên bản</label>
+                        <input type="text" id="prod-version" value="v2.4.0" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mô tả tính năng ngắn</label>
+                    <textarea id="prod-desc" rows="2" placeholder="Mô tả công dụng chính của phần mềm..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Trạng thái kinh doanh</label>
+                    <select id="prod-status" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                        <option value="active">Đang mở bán</option>
+                        <option value="paused">Tạm ngưng</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('product-modal')" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">Lưu sản phẩm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 4: GHI NHẬN ĐƠN BÁN MỚI (Tự sinh Key)
+    =========================================== -->
+    <div id="create-order-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white">Tạo Đơn Hàng & Cấp Key Tự Động</h3>
+                <button onclick="closeModal('create-order-modal')" class="p-1 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="create-order-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tên / Email khách hàng *</label>
+                    <input type="text" id="order-customer" required placeholder="tranthanh@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Gói sản phẩm *</label>
+                    <select id="order-product" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Thời hạn gói</label>
+                        <select id="order-duration" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                            <option value="30" selected>30 Ngày</option>
+                            <option value="365">1 Năm</option>
+                            <option value="99999">Vĩnh viễn</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Thanh toán</label>
+                        <select id="order-method" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white">
+                            <option value="Chuyển khoản QR">Chuyển khoản QR</option>
+                            <option value="MoMo">Ví MoMo</option>
+                            <option value="USDT / Crypto">USDT / Crypto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('create-order-modal')" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white">Xác nhận & Xuất Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TOAST NOTIFICATION
+    =========================================== -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 translate-y-24 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs sm:text-sm font-medium">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="toast-msg">Thao tác thành công!</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         APPLICATION JAVASCRIPT LOGIC
+    =========================================== -->
+    <script>
+        /* ---------------------------------------------------
+           1. KHỞI TẠO DỮ LIỆU MẪU TIẾNG VIỆT & LOCALSTORAGE
+        --------------------------------------------------- */
+        const STORAGE_KEYS = {
+            PRODUCTS: 'km_admin_products_v1',
+            LICENSES: 'km_admin_licenses_v1',
+            ORDERS: 'km_admin_orders_v1',
+            LOGS: 'km_admin_logs_v1',
+            SETTINGS: 'km_admin_settings_v1'
+        };
+
+        const defaultProducts = [
+            {
+                id: 'prod_1',
+                name: 'AutoTikTok Pro Max',
+                price: 350000,
+                version: 'v3.2.1',
+                desc: 'Công cụ nuôi nick, tự động tương tác, seeding livestream và tải video không logo hàng loạt.',
+                status: 'active'
+            },
+            {
+                id: 'prod_2',
+                name: 'UltraProxy Manager',
+                price: 199000,
+                version: 'v1.8.0',
+                desc: 'Phần mềm quản lý, kiểm tra tốc độ sống/chết và xoay IP Proxy SOCKS5/HTTP tự động.',
+                status: 'active'
+            },
+            {
+                id: 'prod_3',
+                name: 'AI Content Studio Desktop',
+                price: 590000,
+                version: 'v4.0.5',
+                desc: 'Trợ lý viết bài chuẩn SEO, tự động đăng bài đa nền tảng và render video ngắn bằng AI.',
+                status: 'active'
+            },
+            {
+                id: 'prod_4',
+                name: 'CloudBackup Enterprise',
+                price: 890000,
+                version: 'v2.1.0',
+                desc: 'Giải pháp sao lưu dữ liệu máy chủ tự động theo lịch trình với mã hóa AES-256.',
+                status: 'paused'
+            }
+        ];
+
+        function getFutureDateISO(days) {
+            if (days >= 90000) return 'LIFETIME';
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString();
+        }
+
+        function getPastDateISO(daysAgo) {
+            const d = new Date();
+            d.setDate(d.getDate() - daysAgo);
+            return d.toISOString();
+        }
+
+        const defaultLicenses = [
+            {
+                id: 'lic_1',
+                key: 'VIP-9482-1049-8821',
+                productId: 'prod_1',
+                status: 'active',
+                durationDays: 30,
+                expiresAt: getFutureDateISO(22),
+                hwid: 'HWID-WIN11-88A2-44F1-90CC',
+                maxDevices: 1,
+                note: 'nguyenvanhung@gmail.com (Đơn #ORD-1024)',
+                createdAt: getPastDateISO(8)
+            },
+            {
+                id: 'lic_2',
+                key: 'PRO-7721-5530-1904',
+                productId: 'prod_3',
+                status: 'active',
+                durationDays: 365,
+                expiresAt: getFutureDateISO(310),
+                hwid: 'HWID-MACOS-31B9-77E2-12AA',
+                maxDevices: 2,
+                note: 'leminhthu.agency@gmail.com (Gói 1 năm)',
+                createdAt: getPastDateISO(55)
+            },
+            {
+                id: 'lic_3',
+                key: 'VIP-3310-8842-6159',
+                productId: 'prod_1',
+                status: 'unused',
+                durationDays: 30,
+                expiresAt: null,
+                hwid: null,
+                maxDevices: 1,
+                note: 'Key tạo sẵn chờ khách thanh toán',
+                createdAt: getPastDateISO(1)
+            },
+            {
+                id: 'lic_4',
+                key: 'LIFE-9901-4428-7735',
+                productId: 'prod_2',
+                status: 'active',
+                durationDays: 99999,
+                expiresAt: 'LIFETIME',
+                hwid: 'HWID-WIN10-55D4-11C8-66EF',
+                maxDevices: 1,
+                note: 'tranquocbao@outlook.com (Lifetime)',
+                createdAt: getPastDateISO(40)
+            },
+            {
+                id: 'lic_5',
+                key: 'VIP-1209-6634-4820',
+                productId: 'prod_2',
+                status: 'expired',
+                durationDays: 7,
+                expiresAt: getPastDateISO(2),
+                hwid: 'HWID-WIN11-19E7-82B0-44FA',
+                maxDevices: 1,
+                note: 'hoangnam.mmo@gmail.com (Cần nhắc gia hạn)',
+                createdAt: getPastDateISO(9)
+            },
+            {
+                id: 'lic_6',
+                key: 'BAN-6654-2219-9087',
+                productId: 'prod_1',
+                status: 'banned',
+                durationDays: 30,
+                expiresAt: getFutureDateISO(15),
+                hwid: 'HWID-WIN11-00F1-99A3-77BC',
+                maxDevices: 1,
+                note: 'Khóa do phát hiện chia sẻ key trái phép',
+                createdAt: getPastDateISO(15)
+            },
+            {
+                id: 'lic_7',
+                key: 'PRO-5581-3092-7416',
+                productId: 'prod_3',
+                status: 'unused',
+                durationDays: 30,
+                expiresAt: null,
+                hwid: null,
+                maxDevices: 1,
+                note: 'Kho key đại lý miền Nam',
+                createdAt: getPastDateISO(0)
+            }
+        ];
+
+        const defaultOrders = [
+            {
+                id: 'ORD-1028',
+                customer: 'leminhthu.agency@gmail.com',
+                productName: 'AI Content Studio Desktop (1 Năm)',
+                keyCode: 'PRO-7721-5530-1904',
+                amount: 1990000,
+                method: 'Chuyển khoản QR',
+                date: 'Hôm nay, 14:25'
+            },
+            {
+                id: 'ORD-1027',
+                customer: 'nguyenvanhung@gmail.com',
+                productName: 'AutoTikTok Pro Max (30 Ngày)',
+                keyCode: 'VIP-9482-1049-8821',
+                amount: 350000,
+                method: 'Ví MoMo',
+                date: 'Hôm nay, 10:12'
+            },
+            {
+                id: 'ORD-1026',
+                customer: 'tranquocbao@outlook.com',
+                productName: 'UltraProxy Manager (Vĩnh viễn)',
+                keyCode: 'LIFE-9901-4428-7735',
+                amount: 790000,
+                method: 'Chuyển khoản QR',
+                date: 'Hôm qua, 21:40'
+            },
+            {
+                id: 'ORD-1025',
+                customer: 'phamminhduc@gmail.com',
+                productName: 'AutoTikTok Pro Max (30 Ngày)',
+                keyCode: 'VIP-3310-8842-6159',
+                amount: 350000,
+                method: 'USDT / Crypto',
+                date: '11/11/2026'
+            }
+        ];
+
+        const defaultLogs = [
+            { type: 'activate', title: 'Kích hoạt thành công VIP-9482-1049-8821', desc: 'HWID: HWID-WIN11-88A2... • AutoTikTok Pro Max', time: '5 phút trước' },
+            { type: 'order', title: 'Đơn hàng mới #ORD-1028 (+1.990.000₫)', desc: 'Khách: leminhthu.agency@gmail.com', time: '32 phút trước' },
+            { type: 'ban', title: 'Đã khóa key BAN-6654-2219-9087', desc: 'Vi phạm giới hạn thiết bị đồng thời', time: '2 giờ trước' },
+            { type: 'create', title: 'Phát hành lô 5 key PRO-XXXX', desc: 'Sản phẩm: AI Content Studio Desktop', time: 'Hôm qua' }
+        ];
+
+        // State toàn cục
+        let products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || defaultProducts;
+        let licenses = JSON.parse(localStorage.getItem(STORAGE_KEYS.LICENSES)) || defaultLicenses;
+        let orders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS)) || defaultOrders;
+        let activityLogs = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS)) || defaultLogs;
+        let settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS)) || {
+            shopName: 'KeyMaster',
+            apiSecret: 'sk_live_98a7f6d5e4c3b2a10987654321fedcba'
+        };
+
+        let currentFilterStatus = 'all';
+        let currentFilterProduct = 'all';
+        let currentSearchQuery = '';
+        let revenueChartInstance = null;
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+            localStorage.setItem(STORAGE_KEYS.LICENSES, JSON.stringify(licenses));
+            localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+            localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(activityLogs));
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+        }
+
+        function addLog(type, title, desc) {
+            activityLogs.unshift({ type, title, desc, time: 'Vừa xong' });
+            if (activityLogs.length > 15) activityLogs.pop();
+            saveData();
+        }
+
+        /* ---------------------------------------------------
+           2. TIỆN ÍCH ĐỊNH DẠNG & THÔNG BÁO
+        --------------------------------------------------- */
+        function formatVND(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        function formatDateVN(isoStr) {
+            if (!isoStr) return 'Chưa kích hoạt';
+            if (isoStr === 'LIFETIME') return 'Vĩnh viễn';
+            const d = new Date(isoStr);
+            return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function getDaysRemaining(isoStr) {
+            if (!isoStr) return null;
+            if (isoStr === 'LIFETIME') return 99999;
+            const diff = new Date(isoStr) - new Date();
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        function copyText(text, label = 'Đã sao chép') {
+            const temp = document.createElement('input');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast(`${label}: ${text}`);
+        }
+
+        function getProductName(prodId) {
+            const found = products.find(p => p.id === prodId);
+            return found ? found.name : 'Gói phần mềm';
+        }
+
+        /* ---------------------------------------------------
+           3. ĐIỀU HƯỚNG TAB & SIDEBAR RESPONSIVE
+        --------------------------------------------------- */
+        const tabMeta = {
+            'dashboard': { title: 'Tổng quan hệ thống', subtitle: 'Theo dõi doanh thu, lượt kích hoạt và trạng thái bản quyền phần mềm' },
+            'keys': { title: 'Quản lý License Keys', subtitle: 'Tạo hàng loạt, tìm kiếm, reset HWID, gia hạn và khóa mã bản quyền' },
+            'products': { title: 'Gói sản phẩm & Phần mềm', subtitle: 'Quản lý danh mục phần mềm, phiên bản và bảng giá bán' },
+            'orders': { title: 'Khách hàng & Đơn hàng', subtitle: 'Lịch sử thanh toán và xuất key tự động cho khách hàng' },
+            'api-tester': { title: 'Giả lập API Kiểm tra Key', subtitle: 'Kiểm thử luồng xác thực bản quyền từ phần mềm Client' },
+            'settings': { title: 'Cài đặt hệ thống', subtitle: 'Cấu hình thông tin cửa hàng, API Secret và dữ liệu lưu trữ' }
+        };
+
+        function switchTab(tabId) {
+            // Ẩn tất cả view
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            // Cập nhật trạng thái nút Sidebar
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.className = 'nav-tab active w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-indigo-600/15 text-indigo-400 border border-indigo-500/30';
+                } else {
+                    btn.className = 'nav-tab w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent transition-all';
+                }
+            });
+
+            // Cập nhật tiêu đề Header
+            if (tabMeta[tabId]) {
+                document.getElementById('page-title').textContent = tabMeta[tabId].title;
+                document.getElementById('page-subtitle').textContent = tabMeta[tabId].subtitle;
+            }
+
+            // Đóng sidebar trên mobile
+            closeMobileSidebar();
+            renderAll();
+        }
+
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+        });
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function openMobileSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        }
+        function closeMobileSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        }
+        document.getElementById('open-sidebar-btn').addEventListener('click', openMobileSidebar);
+        document.getElementById('close-sidebar-btn').addEventListener('click', closeMobileSidebar);
+        sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+        /* ---------------------------------------------------
+           4. RENDER DASHBOARD (KPIs, Chart.js, Recent Activity)
+        --------------------------------------------------- */
+        function renderDashboard() {
+            const totalRevenue = orders.reduce((sum, o) => sum + Number(o.amount || 0), 0);
+            const totalKeys = licenses.length;
+            const activeKeys = licenses.filter(k => k.status === 'active').length;
+            const unusedKeys = licenses.filter(k => k.status === 'unused').length;
+            const alertKeys = licenses.filter(k => {
+                if (k.status === 'expired' || k.status === 'banned') return true;
+                const days = getDaysRemaining(k.expiresAt);
+                return k.status === 'active' && days !== null && days <= 3;
+            }).length;
+
+            document.getElementById('kpi-revenue').textContent = formatVND(totalRevenue);
+            document.getElementById('kpi-total-keys').textContent = totalKeys;
+            document.getElementById('kpi-unused-keys').textContent = unusedKeys;
+            document.getElementById('kpi-active-keys').textContent = activeKeys;
+            document.getElementById('kpi-alert-keys').textContent = alertKeys;
+            document.getElementById('sidebar-key-count').textContent = totalKeys;
+
+            // Render Recent Activity
+            const activityContainer = document.getElementById('recent-activity-list');
+            activityContainer.innerHTML = activityLogs.map(log => {
+                let icon = 'activity';
+                let colorClass = 'bg-indigo-500/15 text-indigo-400 border-indigo-500/20';
+                if (log.type === 'activate') { icon = 'check-circle'; colorClass = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'; }
+                if (log.type === 'order') { icon = 'dollar-sign'; colorClass = 'bg-amber-500/15 text-amber-400 border-amber-500/20'; }
+                if (log.type === 'ban') { icon = 'shield-off'; colorClass = 'bg-rose-500/15 text-rose-400 border-rose-500/20'; }
+
+                return `
+                    <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg border ${colorClass} flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="${icon}" class="w-4 h-4"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-slate-200 truncate">${log.title}</p>
+                            <p class="text-[11px] text-slate-400 truncate mt-0.5">${log.desc}</p>
+                        </div>
+                        <span class="text-[10px] text-slate-500 whitespace-nowrap">${log.time}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Chart.js (7 ngày gần nhất)
+            const ctx = document.getElementById('revenueChart');
+            if (ctx) {
+                const labels = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    labels.push(d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }));
+                }
+
+                const revenueData = [650000, 1200000, 950000, 1850000, 1400000, 2100000, totalRevenue > 3000000 ? 2340000 : 1650000];
+                const activationData = [4, 7, 5, 11, 9, 14, activeKeys + 6];
+
+                if (revenueChartInstance) {
+                    revenueChartInstance.destroy();
+                }
+
+                revenueChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Doanh thu (VNĐ)',
+                                data: revenueData,
+                                backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                                borderColor: '#6366f1',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Lượt kích hoạt Key',
+                                data: activationData,
+                                type: 'line',
+                                borderColor: '#10b981',
+                                backgroundColor: '#10b981',
+                                tension: 0.35,
+                                pointRadius: 4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                                ticks: { color: '#94a3b8', font: { size: 11 } }
+                            },
+                            y: {
+                                type: 'linear',
+                                position: 'left',
+                                grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: { size: 11 },
+                                    callback: val => (val / 1000) + 'k'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                ticks: { color: '#10b981', font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        /* ---------------------------------------------------
+           5. QUẢN LÝ LICENSE KEYS (Lọc, Tạo hàng loạt, Reset HWID, Khóa, Gia hạn)
+        --------------------------------------------------- */
+        function getFilteredLicenses() {
+            return licenses.filter(item => {
+                // Tự động cập nhật trạng thái nếu đã hết hạn
+                if (item.status === 'active' && item.expiresAt && item.expiresAt !== 'LIFETIME') {
+                    if (new Date(item.expiresAt) < new Date()) {
+                        item.status = 'expired';
+                    }
+                }
+
+                const matchStatus = currentFilterStatus === 'all' || item.status === currentFilterStatus;
+                const matchProduct = currentFilterProduct === 'all' || item.productId === currentFilterProduct;
+                const q = currentSearchQuery.toLowerCase().trim();
+                const matchQuery = !q ||
+                    item.key.toLowerCase().includes(q) ||
+                    (item.hwid && item.hwid.toLowerCase().includes(q)) ||
+                    (item.note && item.note.toLowerCase().includes(q));
+
+                return matchStatus && matchProduct && matchQuery;
+            });
+        }
+
+        function renderKeysTable() {
+            const tbody = document.getElementById('keys-table-body');
+            const emptyState = document.getElementById('keys-empty-state');
+            const filtered = getFilteredLicenses();
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            tbody.innerHTML = filtered.map(lic => {
+                // Badge trạng thái
+                const statusBadges = {
+                    'unused': '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-400 border border-indigo-500/30"><span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Chưa kích hoạt</span>',
+                    'active': '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Đang hoạt động</span>',
+                    'expired': '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Hết hạn</span>',
+                    'banned': '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/15 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Đã khóa</span>'
+                };
+
+                // Thời hạn hiển thị
+                let durationLabel = lic.durationDays >= 90000 ? 'Vĩnh viễn' : `${lic.durationDays} ngày`;
+                let expirySub = lic.status === 'unused'
+                    ? 'Tính từ lúc kích hoạt'
+                    : (lic.expiresAt === 'LIFETIME' ? 'Không giới hạn' : `Hết hạn: ${formatDateVN(lic.expiresAt)}`);
+
+                // HWID hiển thị
+                const hwidHtml = lic.hwid
+                    ? `<div class="flex items-center gap-1.5">
+                           <code class="text-xs font-mono text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 max-w-[140px] truncate" title="${lic.hwid}">${lic.hwid}</code>
+                           <button onclick="resetKeyHwid('${lic.id}')" class="p-1 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors" title="Reset HWID (Gỡ thiết bị cũ)">
+                               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                           </button>
+                       </div>`
+                    : `<span class="text-xs text-slate-500 italic">Chưa gắn thiết bị</span>`;
+
+                const isBanned = lic.status === 'banned';
+
+                return `
+                    <tr class="hover:bg-slate-800/35 transition-colors">
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-2">
+                                <code class="font-mono text-xs sm:text-sm font-semibold text-white bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">${lic.key}</code>
+                                <button onclick="copyText('${lic.key}', 'Đã copy Key')" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors" title="Sao chép mã Key">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <p class="text-xs font-semibold text-slate-200">${getProductName(lic.productId)}</p>
+                            <p class="text-[11px] text-slate-500">Tối đa ${lic.maxDevices} thiết bị</p>
+                        </td>
+                        <td class="py-3.5 px-4">${statusBadges[lic.status] || statusBadges.unused}</td>
+                        <td class="py-3.5 px-4">
+                            <p class="text-xs font-semibold text-slate-200">${durationLabel}</p>
+                            <p class="text-[11px] text-slate-400">${expirySub}</p>
+                        </td>
+                        <td class="py-3.5 px-4">${hwidHtml}</td>
+                        <td class="py-3.5 px-4">
+                            <p class="text-xs text-slate-300 max-w-[180px] truncate" title="${lic.note || ''}">${lic.note || '—'}</p>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <button onclick="openExtendModal('${lic.id}')" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 border border-slate-700/70 transition-colors" title="Gia hạn thêm ngày">
+                                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="toggleBanKey('${lic.id}')" class="p-1.5 rounded-lg bg-slate-800/80 ${isBanned ? 'hover:bg-emerald-500/20 text-amber-400 hover:text-emerald-400' : 'hover:bg-amber-500/20 text-slate-300 hover:text-amber-400'} border border-slate-700/70 transition-colors" title="${isBanned ? 'Mở khóa Key' : 'Khóa Key này'}">
+                                    <i data-lucide="${isBanned ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteKey('${lic.id}')" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700/70 transition-colors" title="Xóa vĩnh viễn Key">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Lọc & Tìm kiếm Key
+        document.querySelectorAll('.status-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.status-filter-btn').forEach(b => {
+                    b.className = 'status-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition-all';
+                });
+                btn.className = 'status-filter-btn active px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all';
+                currentFilterStatus = btn.getAttribute('data-status');
+                renderKeysTable();
+                lucide.createIcons();
+            });
+        });
+
+        document.getElementById('key-search-input').addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            renderKeysTable();
+            lucide.createIcons();
+        });
+
+        document.getElementById('key-product-filter').addEventListener('change', (e) => {
+            currentFilterProduct = e.target.value;
+            renderKeysTable();
+            lucide.createIcons();
+        });
+
+        // Sinh mã Key ngẫu nhiên định dạng PREFIX-XXXX-XXXX-XXXX
+        function generateRandomKeyString(prefix = 'VIP') {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const block = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+            const cleanPrefix = (prefix || 'KEY').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'KEY';
+            return `${cleanPrefix}-${block()}-${block()}-${block()}`;
+        }
+
+        // Modal Tạo Key Mới
+        function openCreateKeyModal() {
+            populateProductDropdowns();
+            document.getElementById('create-key-modal').classList.remove('hidden');
+            document.getElementById('create-key-modal').classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+        }
+
+        document.getElementById('create-key-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const productId = document.getElementById('new-key-product').value;
+            const durationDays = Number(document.getElementById('new-key-duration').value);
+            const quantity = Math.min(50, Math.max(1, Number(document.getElementById('new-key-quantity').value)));
+            const prefix = document.getElementById('new-key-prefix').value;
+            const maxDevices = Number(document.getElementById('new-key-max-devices').value);
+            const note = document.getElementById('new-key-note').value.trim();
+
+            const createdKeys = [];
+            for (let i = 0; i < quantity; i++) {
+                const newKeyStr = generateRandomKeyString(prefix);
+                createdKeys.push(newKeyStr);
+                licenses.unshift({
+                    id: 'lic_' + Date.now() + '_' + i,
+                    key: newKeyStr,
+                    productId,
+                    status: 'unused',
+                    durationDays,
+                    expiresAt: null,
+                    hwid: null,
+                    maxDevices,
+                    note: note || `Tạo hàng loạt (${quantity} key)`,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            addLog('create', `Phát hành ${quantity} License Key mới`, `Sản phẩm: ${getProductName(productId)} • Prefix: ${prefix.toUpperCase()}`);
+            saveData();
+            closeModal('create-key-modal');
+            renderAll();
+
+            if (quantity === 1) {
+                copyText(createdKeys[0], 'Đã tạo & sao chép Key');
+            } else {
+                showToast(`Đã tạo thành công ${quantity} License Key mới!`);
+            }
+        });
+
+        // Các hành động trên từng Key
+        function resetKeyHwid(id) {
+            const lic = licenses.find(k => k.id === id);
+            if (!lic) return;
+            lic.hwid = null;
+            addLog('activate', `Reset HWID cho key ${lic.key}`, 'Cho phép kích hoạt lại trên thiết bị mới');
+            saveData();
+            renderAll();
+            showToast(`Đã xóa HWID cũ của key ${lic.key}`);
+        }
+
+        function toggleBanKey(id) {
+            const lic = licenses.find(k => k.id === id);
+            if (!lic) return;
+            if (lic.status === 'banned') {
+                lic.status = lic.hwid ? 'active' : 'unused';
+                addLog('activate', `Đã mở khóa key ${lic.key}`, 'Khôi phục quyền truy cập bản quyền');
+                showToast(`Đã mở khóa key ${lic.key}`);
+            } else {
+                lic.status = 'banned';
+                addLog('ban', `Đã khóa key ${lic.key}`, 'Thu hồi quyền sử dụng phần mềm');
+                showToast(`Đã khóa key ${lic.key}`);
+            }
+            saveData();
+            renderAll();
+        }
+
+        function deleteKey(id) {
+            const idx = licenses.findIndex(k => k.id === id);
+            if (idx === -1) return;
+            const removed = licenses[idx];
+            licenses.splice(idx, 1);
+            saveData();
+            renderAll();
+            showToast(`Đã xóa key ${removed.key}`);
+        }
+
+        function openExtendModal(id) {
+            const lic = licenses.find(k => k.id === id);
+            if (!lic) return;
+            document.getElementById('extend-key-id').value = lic.id;
+            document.getElementById('extend-key-code-display').textContent = lic.key;
+            document.getElementById('extend-key-modal').classList.remove('hidden');
+            document.getElementById('extend-key-modal').classList.add('flex');
+        }
+
+        document.getElementById('extend-key-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('extend-key-id').value;
+            const addDays = Number(document.getElementById('extend-days-select').value);
+            const lic = licenses.find(k => k.id === id);
+            if (!lic) return;
+
+            if (lic.expiresAt === 'LIFETIME') {
+                showToast('Key này đã là gói Vĩnh viễn!');
+                closeModal('extend-key-modal');
+                return;
+            }
+
+            lic.durationDays += addDays;
+            if (lic.expiresAt) {
+                const baseDate = new Date(lic.expiresAt) > new Date() ? new Date(lic.expiresAt) : new Date();
+                baseDate.setDate(baseDate.getDate() + addDays);
+                lic.expiresAt = baseDate.toISOString();
+                if (lic.status === 'expired') lic.status = 'active';
+            }
+
+            addLog('activate', `Gia hạn +${addDays} ngày cho key ${lic.key}`, `Hạn mới: ${formatDateVN(lic.expiresAt)}`);
+            saveData();
+            closeModal('extend-key-modal');
+            renderAll();
+            showToast(`Đã cộng thêm ${addDays} ngày cho key ${lic.key}`);
+        });
+
+        // Xuất file .TXT hoặc .CSV
+        function exportKeys(format) {
+            const list = getFilteredLicenses();
+            if (list.length === 0) {
+                showToast('Không có dữ liệu key để xuất file!');
+                return;
+            }
+
+            let content = '';
+            let mimeType = 'text/plain;charset=utf-8';
+            let fileName = `danh_sach_key_${new Date().toISOString().slice(0, 10)}.${format}`;
+
+            if (format === 'txt') {
+                content = list.map(k => `${k.key} | ${getProductName(k.productId)} | ${k.durationDays >= 90000 ? 'Vinh vien' : k.durationDays + ' ngay'} | ${k.status.toUpperCase()}`).join('\n');
+            } else {
+                mimeType = 'text/csv;charset=utf-8';
+                const header = 'License Key,San Pham,Trang Thai,Thoi Han (Ngay),Ngay Het Han,HWID,Ghi Chu\n';
+                const rows = list.map(k => `"${k.key}","${getProductName(k.productId)}","${k.status}","${k.durationDays}","${formatDateVN(k.expiresAt)}","${k.hwid || ''}","${(k.note || '').replace(/"/g, '""')}"`).join('\n');
+                content = '\uFEFF' + header + rows;
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Đã tải xuống file ${fileName}`);
+        }
+
+        /* ---------------------------------------------------
+           6. QUẢN LÝ GÓI SẢN PHẨM (PRODUCTS)
+        --------------------------------------------------- */
+        function populateProductDropdowns() {
+            const optionsHtml = products.map(p => `<option value="${p.id}">${p.name} (${formatVND(p.price)})</option>`).join('');
+            document.getElementById('new-key-product').innerHTML = optionsHtml;
+            document.getElementById('order-product').innerHTML = optionsHtml;
+
+            const filterSelect = document.getElementById('key-product-filter');
+            const currentVal = filterSelect.value;
+            filterSelect.innerHTML = `<option value="all">Tất cả gói sản phẩm</option>` + products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            filterSelect.value = currentVal || 'all';
+        }
+
+        function renderProductsGrid() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = products.map(prod => {
+                const keyCount = licenses.filter(k => k.productId === prod.id).length;
+                const isActive = prod.status === 'active';
+                return `
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 flex flex-col justify-between space-y-5 hover:border-indigo-500/40 transition-all">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 flex items-center justify-center">
+                                    <i data-lucide="box" class="w-5 h-5"></i>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold ${isActive ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                                    ${isActive ? 'Đang mở bán' : 'Tạm ngưng'}
+                                </span>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-white">${prod.name}</h3>
+                                    <span class="px-1.5 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-slate-300">${prod.version}</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">${prod.desc || 'Phần mềm bản quyền chính hãng.'}</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[11px] text-slate-500">Giá niêm yết / tháng</p>
+                                    <p class="text-lg font-extrabold text-emerald-400">${formatVND(prod.price)}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[11px] text-slate-500">Đã phát hành</p>
+                                    <p class="text-sm font-bold text-white">${keyCount} Key</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button onclick="openProductModal('${prod.id}')" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors">
+                                    Chỉnh sửa
+                                </button>
+                                <button onclick="deleteProduct('${prod.id}')" class="p-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors" title="Xóa sản phẩm">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openProductModal(prodId = null) {
+            const modalTitle = document.getElementById('product-modal-title');
+            if (prodId) {
+                const prod = products.find(p => p.id === prodId);
+                if (!prod) return;
+                modalTitle.textContent = 'Chỉnh sửa gói sản phẩm';
+                document.getElementById('prod-id').value = prod.id;
+                document.getElementById('prod-name').value = prod.name;
+                document.getElementById('prod-price').value = prod.price;
+                document.getElementById('prod-version').value = prod.version;
+                document.getElementById('prod-desc').value = prod.desc;
+                document.getElementById('prod-status').value = prod.status;
+            } else {
+                modalTitle.textContent = 'Thêm gói sản phẩm mới';
+                document.getElementById('product-form').reset();
+                document.getElementById('prod-id').value = '';
+            }
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('product-modal').classList.add('flex');
+        }
+
+        document.getElementById('product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const payload = {
+                name: document.getElementById('prod-name').value.trim(),
+                price: Number(document.getElementById('prod-price').value),
+                version: document.getElementById('prod-version').value.trim() || 'v1.0.0',
+                desc: document.getElementById('prod-desc').value.trim(),
+                status: document.getElementById('prod-status').value
+            };
+
+            if (id) {
+                const idx = products.findIndex(p => p.id === id);
+                if (idx !== -1) products[idx] = { ...products[idx], ...payload };
+                showToast('Đã cập nhật thông tin sản phẩm!');
+            } else {
+                products.push({ id: 'prod_' + Date.now(), ...payload });
+                showToast('Đã thêm gói sản phẩm mới!');
+            }
+
+            saveData();
+            closeModal('product-modal');
+            renderAll();
+        });
+
+        function deleteProduct(id) {
+            if (products.length <= 1) {
+                showToast('Cần giữ lại ít nhất 1 sản phẩm trong hệ thống!');
+                return;
+            }
+            products = products.filter(p => p.id !== id);
+            saveData();
+            renderAll();
+            showToast('Đã xóa sản phẩm!');
+        }
+
+        /* ---------------------------------------------------
+           7. KHÁCH HÀNG & ĐƠN HÀNG (ORDERS)
+        --------------------------------------------------- */
+        function renderOrdersTable() {
+            const tbody = document.getElementById('orders-table-body');
+            tbody.innerHTML = orders.map(o => `
+                <tr class="hover:bg-slate-800/35 transition-colors">
+                    <td class="py-3.5 px-4 font-mono text-xs font-bold text-indigo-400">#${o.id}</td>
+                    <td class="py-3.5 px-4 text-xs font-medium text-white">${o.customer}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-300">${o.productName}</td>
+                    <td class="py-3.5 px-4">
+                        <button onclick="copyText('${o.keyCode}', 'Đã copy Key')" class="font-mono text-xs bg-slate-950 px-2.5 py-1 rounded border border-slate-800 text-emerald-400 hover:border-emerald-500/50 transition-colors">
+                            ${o.keyCode}
+                        </button>
+                    </td>
+                    <td class="py-3.5 px-4 text-xs font-bold text-emerald-400">${formatVND(o.amount)}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-400">${o.method}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-500">${o.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function openCreateOrderModal() {
+            populateProductDropdowns();
+            document.getElementById('create-order-modal').classList.remove('hidden');
+            document.getElementById('create-order-modal').classList.add('flex');
+        }
+
+        document.getElementById('create-order-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const customer = document.getElementById('order-customer').value.trim();
+            const productId = document.getElementById('order-product').value;
+            const durationDays = Number(document.getElementById('order-duration').value);
+            const method = document.getElementById('order-method').value;
+
+            const prod = products.find(p => p.id === productId);
+            const multiplier = durationDays >= 90000 ? 3 : (durationDays >= 365 ? 8 : 1);
+            const amount = (prod ? prod.price : 250000) * multiplier;
+
+            const newKeyCode = generateRandomKeyString(durationDays >= 90000 ? 'LIFE' : 'VIP');
+            const orderId = 'ORD-' + Math.floor(1030 + Math.random() * 900);
+
+            licenses.unshift({
+                id: 'lic_' + Date.now(),
+                key: newKeyCode,
+                productId,
+                status: 'unused',
+                durationDays,
+                expiresAt: null,
+                hwid: null,
+                maxDevices: 1,
+                note: `${customer} (#${orderId})`,
+                createdAt: new Date().toISOString()
+            });
+
+            orders.unshift({
+                id: orderId,
+                customer,
+                productName: `${prod ? prod.name : 'Gói phần mềm'} (${durationDays >= 90000 ? 'Vĩnh viễn' : durationDays + ' Ngày'})`,
+                keyCode: newKeyCode,
+                amount,
+                method,
+                date: 'Vừa xong'
+            });
+
+            addLog('order', `Đơn hàng mới #${orderId} (+${formatVND(amount)})`, `Đã cấp key ${newKeyCode} cho ${customer}`);
+            saveData();
+            closeModal('create-order-modal');
+            renderAll();
+            copyText(newKeyCode, 'Đã tạo đơn & sao chép Key');
+        });
+
+        /* ---------------------------------------------------
+           8. GIẢ LẬP API CHECK KEY & CODE SNIPPETS
+        --------------------------------------------------- */
+        function fillSampleUnusedKey() {
+            const candidate = licenses.find(k => k.status === 'unused') || licenses[0];
+            if (candidate) {
+                document.getElementById('api-input-key').value = candidate.key;
+                showToast(`Đã điền mã key: ${candidate.key}`);
+            }
+        }
+
+        function generateRandomHwid() {
+            const hex = () => Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase();
+            document.getElementById('api-input-hwid').value = `HWID-WIN11-${hex()}-${hex()}-${hex()}`;
+        }
+
+        document.getElementById('api-test-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inputKey = document.getElementById('api-input-key').value.trim().toUpperCase();
+            const inputHwid = document.getElementById('api-input-hwid').value.trim();
+
+            const statusBadge = document.getElementById('api-status-badge');
+            const outputPre = document.getElementById('api-json-output');
+
+            const lic = licenses.find(k => k.key.toUpperCase() === inputKey);
+            let responseObj = {};
+            let isSuccess = false;
+
+            if (!lic) {
+                responseObj = {
+                    success: false,
+                    error_code: "KEY_NOT_FOUND",
+                    message: "Mã License Key không tồn tại trên hệ thống.",
+                    timestamp: new Date().toISOString()
+                };
+            } else if (lic.status === 'banned') {
+                responseObj = {
+                    success: false,
+                    error_code: "KEY_BANNED",
+                    message: "License Key này đã bị khóa do vi phạm điều khoản sử dụng.",
+                    key: lic.key
+                };
+            } else {
+                // Kiểm tra hết hạn trước
+                if (lic.status === 'active' && lic.expiresAt !== 'LIFETIME' && new Date(lic.expiresAt) < new Date()) {
+                    lic.status = 'expired';
+                }
+
+                if (lic.status === 'expired') {
+                    responseObj = {
+                        success: false,
+                        error_code: "KEY_EXPIRED",
+                        message: "License Key đã hết hạn sử dụng. Vui lòng gia hạn thêm.",
+                        expired_at: lic.expiresAt
+                    };
+                } else if (lic.status === 'unused' || !lic.hwid) {
+                    // Kích hoạt lần đầu & gắn chặt HWID
+                    lic.status = 'active';
+                    lic.hwid = inputHwid;
+                    if (!lic.expiresAt) {
+                        lic.expiresAt = getFutureDateISO(lic.durationDays);
+                    }
+                    isSuccess = true;
+                    addLog('activate', `Kích hoạt lần đầu ${lic.key}`, `Gắn thiết bị ${inputHwid}`);
+                    responseObj = {
+                        success: true,
+                        status: "ACTIVATED_FIRST_TIME",
+                        message: "Kích hoạt bản quyền thành công! Thiết bị đã được liên kết.",
+                        data: {
+                            key: lic.key,
+                            product: getProductName(lic.productId),
+                            hwid: lic.hwid,
+                            expires_at: lic.expiresAt,
+                            days_remaining: getDaysRemaining(lic.expiresAt)
+                        }
+                    };
+                } else if (lic.hwid !== inputHwid) {
+                    responseObj = {
+                        success: false,
+                        error_code: "HWID_MISMATCH",
+                        message: "Key này đã được kích hoạt trên một máy tính khác. Vui lòng liên hệ Admin để Reset HWID.",
+                        registered_hwid: lic.hwid.slice(0, 12) + "****"
+                    };
+                } else {
+                    // Đã kích hoạt & khớp HWID
+                    isSuccess = true;
+                    responseObj = {
+                        success: true,
+                        status: "VALID_LICENSE",
+                        message: "Xác thực bản quyền hợp lệ.",
+                        data: {
+                            key: lic.key,
+                            product: getProductName(lic.productId),
+                            hwid: lic.hwid,
+                            expires_at: lic.expiresAt,
+                            days_remaining: getDaysRemaining(lic.expiresAt)
+                        }
+                    };
+                }
+            }
+
+            saveData();
+            renderAll();
+
+            if (isSuccess) {
+                statusBadge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                statusBadge.textContent = '200 OK • HỢP LỆ';
+                outputPre.className = 'p-4 rounded-xl bg-slate-950 border border-emerald-500/40 font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed';
+            } else {
+                statusBadge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                statusBadge.textContent = '403 FORBIDDEN • LỖI';
+                outputPre.className = 'p-4 rounded-xl bg-slate-950 border border-rose-500/40 font-mono text-xs text-rose-400 overflow-x-auto leading-relaxed';
+            }
+            outputPre.textContent = JSON.stringify(responseObj, null, 2);
+        });
+
+        // Code Snippets mẫu cho C#, Python, Node.js
+        const codeSnippets = {
+            csharp: `using System;\nusing System.Net.Http;\nusing System.Text;\nusing System.Threading.Tasks;\n\npublic class LicenseClient {\n    private static readonly HttpClient client = new HttpClient();\n\n    public static async Task<bool> VerifyKeyAsync(string licenseKey, string hwid) {\n        var payload = $"{{\\"key\\":\\"{licenseKey}\\",\\"hwid\\":\\"{hwid}\\"}}";\n        var content = new StringContent(payload, Encoding.UTF8, "application/json");\n\n        var response = await client.PostAsync("https://api.keymaster.vn/api/v1/license/verify", content);\n        string result = await response.Content.ReadAsStringAsync();\n        \n        Console.WriteLine("Server Response: " + result);\n        return response.IsSuccessStatusCode;\n    }\n}`,
+            python: `import requests\nimport subprocess\n\ndef get_hwid():\n    cmd = 'wmic csproduct get uuid'\n    return subprocess.check_output(cmd).decode().split('\\n')[1].strip()\n\ndef verify_license(license_key: str):\n    url = "https://api.keymaster.vn/api/v1/license/verify"\n    payload = {\n        "key": license_key,\n        "hwid": get_hwid()\n    }\n    res = requests.post(url, json=payload, timeout=10)\n    data = res.json()\n    if data.get("success"):\n        print("Kích hoạt thành công! Hết hạn:", data["data"]["expires_at"])\n        return True\n    print("Lỗi bản quyền:", data.get("message"))\n    return False`,
+            nodejs: `import os from 'os';\nimport crypto from 'crypto';\n\nfunction getMachineHwid() {\n  const raw = os.hostname() + os.arch() + os.cpus()[0].model;\n  return 'HWID-' + crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16).toUpperCase();\n}\n\nexport async function verifyLicense(licenseKey) {\n  const res = await fetch('https://api.keymaster.vn/api/v1/license/verify', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ key: licenseKey, hwid: getMachineHwid() })\n  });\n  return await res.json();\n}`
+        };
+
+        let currentSnippetLang = 'csharp';
+        function renderCodeSnippet() {
+            document.getElementById('code-snippet-display').textContent = codeSnippets[currentSnippetLang];
+        }
+
+        document.querySelectorAll('.code-lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.code-lang-btn').forEach(b => {
+                    b.className = 'code-lang-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700';
+                });
+                btn.className = 'code-lang-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white';
+                currentSnippetLang = btn.getAttribute('data-lang');
+                renderCodeSnippet();
+            });
+        });
+
+        function copyCodeSnippet() {
+            copyText(codeSnippets[currentSnippetLang], 'Đã sao chép mã nguồn mẫu');
+        }
+
+        /* ---------------------------------------------------
+           9. CÀI ĐẶT HỆ THỐNG & KHÔI PHỤC DỮ LIỆU
+        --------------------------------------------------- */
+        function applySettingsUI() {
+            document.getElementById('brand-name-display').textContent = settings.shopName;
+            document.getElementById('setting-shop-name').value = settings.shopName;
+            document.getElementById('setting-api-secret').value = settings.apiSecret;
+        }
+
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            settings.shopName = document.getElementById('setting-shop-name').value.trim() || 'KeyMaster';
+            saveData();
+            applySettingsUI();
+            showToast('Đã lưu cài đặt hệ thống!');
+        });
+
+        function regenerateApiSecret() {
+            const rand = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+            settings.apiSecret = 'sk_live_' + rand;
+            saveData();
+            applySettingsUI();
+            showToast('Đã tạo khóa API Secret mới!');
+        }
+
+        function resetAllDemoData() {
+            localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+            localStorage.removeItem(STORAGE_KEYS.LICENSES);
+            localStorage.removeItem(STORAGE_KEYS.ORDERS);
+            localStorage.removeItem(STORAGE_KEYS.LOGS);
+            localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+            location.reload();
+        }
+
+        /* ---------------------------------------------------
+           10. KHỞI CHẠY TOÀN BỘ ỨNG DỤNG
+        --------------------------------------------------- */
+        function renderAll() {
+            populateProductDropdowns();
+            renderDashboard();
+            renderKeysTable();
+            renderProductsGrid();
+            renderOrdersTable();
+            renderCodeSnippet();
+            applySettingsUI();
+            lucide.createIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+        });
+    </script>
+</body>
+</html>
